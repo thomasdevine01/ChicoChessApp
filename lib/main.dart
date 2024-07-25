@@ -1,68 +1,86 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_chess_board/flutter_chess_board.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'pages/local_chessboard.dart';
+import 'firebase_options.dart';
+import 'pages/signin.dart';
+import 'utils/auth.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Flutter Navigation Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+        primarySwatch: Colors.blue,
       ),
-      home: const ChessBoardScreen(),
+      initialRoute: '/',
+      routes: {
+        '/': (context) => AuthenticationWrapper(),
+        '/chessboard': (context) => LocalChessBoardScreen(),
+      },
     );
   }
 }
 
-class ChessBoardScreen extends StatefulWidget {
-  const ChessBoardScreen({super.key});
-
+class AuthenticationWrapper extends StatelessWidget {
   @override
-  _ChessBoardScreenState createState() => _ChessBoardScreenState();
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: AuthService().authStateChanges,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.active) {
+          final User? user = snapshot.data;
+          return user == null ? SignInScreen() : HomeScreen();
+        }
+        return CircularProgressIndicator();
+      },
+    );
+  }
 }
 
-class _ChessBoardScreenState extends State<ChessBoardScreen> {
-  ChessBoardController controller = ChessBoardController();
-
+class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chess Demo'),
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: ChessBoard(
-                controller: controller,
-                boardColor: BoardColor.green,
-                boardOrientation: PlayerColor.white,
-              ),
-            ),
-          ),
-          Expanded(
-            child: ValueListenableBuilder<Chess>(
-              valueListenable: controller,
-              builder: (context, game, _) {
-                return Text(
-                  controller.getSan().fold(
-                        '',
-                        (previousValue, element) =>
-                            previousValue + '\n' + (element ?? ''),
-                      ),
-                );
-              },
-            ),
+        title: Text('Home'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.person),
+            onPressed: () async {
+              await AuthService().signOut();
+            },
           ),
         ],
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/chessboard');
+              },
+              child: Text('Local Chess'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/third');
+              },
+              child: Text('Go to Third Page'),
+            ),
+          ],
+        ),
       ),
     );
   }
