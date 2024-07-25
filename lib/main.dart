@@ -1,21 +1,24 @@
+import 'package:chico_chess_connect/pages/multiplayer/lobby.dart';
+import 'package:chico_chess_connect/pages/auth/profile.dart';
+import 'package:chico_chess_connect/utils/auth.dart';
+import 'package:chico_chess_connect/pages/local/local_chessboard.dart';
+import 'package:chico_chess_connect/firebase_options.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'pages/local_chessboard.dart';
-import 'firebase_options.dart';
-import 'pages/signin.dart';
-import 'utils/auth.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -25,42 +28,36 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => AuthenticationWrapper(),
-        '/chessboard': (context) => LocalChessBoardScreen(),
-      },
-    );
-  }
-}
-
-class AuthenticationWrapper extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return StreamBuilder<User?>(
-      stream: AuthService().authStateChanges,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.active) {
-          final User? user = snapshot.data;
-          return user == null ? SignInScreen() : HomeScreen();
-        }
-        return CircularProgressIndicator();
+        '/': (context) => const Auth(),
+        '/chessboard': (context) => const LocalChessBoardScreen(),
+        '/multiplayer': (context) => Lobby(),
+        '/profile': (context) => const ProfileScreen(),
       },
     );
   }
 }
 
 class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Home'),
+        title: const Text('Home'),
         actions: [
           IconButton(
-            icon: Icon(Icons.person),
+            icon: const Icon(Icons.person),
+            onPressed: () async {
+              Navigator.pushNamed(context, '/profile');
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
             onPressed: () async {
               await AuthService().signOut();
             },
-          ),
+          )
         ],
       ),
       body: Center(
@@ -71,13 +68,13 @@ class HomeScreen extends StatelessWidget {
               onPressed: () {
                 Navigator.pushNamed(context, '/chessboard');
               },
-              child: Text('Local Chess'),
+              child: const Text('Local Chess'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/third');
+                Navigator.pushNamed(context, '/multiplayer');
               },
-              child: Text('Go to Third Page'),
+              child: const Text('Multiplayer'),
             ),
           ],
         ),
