@@ -1,7 +1,8 @@
-import 'package:chico_chess_connect/pages/local/local_chess_settings.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_chess_board/flutter_chess_board.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_chess_board/flutter_chess_board.dart';
+import 'package:chico_chess_connect/pages/local/local_chess_settings.dart';
+import 'package:chico_chess_connect/utils/chess_board_screen.dart';
 
 class LocalChessBoardScreen extends StatefulWidget {
   const LocalChessBoardScreen({super.key});
@@ -29,7 +30,7 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
     });
   }
 
-  _updatePGN(ChessBoardController controller) async {
+  _updatePGN() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     _currentMoveList = controller.getSan().fold(
           '',
@@ -42,67 +43,21 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Local Chess'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const SettingsPage(),
-                  maintainState: true,
-                ),
-              ).then((_) {
-                _loadSettings();
-              });
-            },
+    return ChessBoardScreen(
+      controller: controller,
+      boardColor: _boardColor,
+      showGameState: showGameState,
+      onSettingsPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const SettingsPage(),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: ChessBoard(
-                controller: controller,
-                onMove: () async {
-                  await _updatePGN(controller);
-                },
-                boardColor: _boardColor == 'green'
-                    ? BoardColor.green
-                    : BoardColor.brown,
-                boardOrientation: PlayerColor.white,
-              ),
-            ),
-          ),
-          if (showGameState)
-            Expanded(
-              child: ValueListenableBuilder<Chess>(
-                valueListenable: controller,
-                builder: (context, game, _) {
-                  return Text(
-                    controller.getSan().fold(
-                          '',
-                          (previousValue, element) =>
-                              '$previousValue\n${element ?? ''}',
-                        ),
-                  );
-                },
-              ),
-            ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                showGameState = !showGameState;
-              });
-            },
-            child: Text(showGameState ? 'Hide Moves' : 'Show Moves'),
-          ),
-        ],
-      ),
+        ).then((_) {
+          _loadSettings();
+        });
+      },
+      onMove: _updatePGN,
     );
   }
 }
