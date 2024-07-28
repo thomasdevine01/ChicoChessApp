@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:chico_chess_connect/pages/multiplayer.dart';
+import 'package:chico_chess_connect/pages/multiplayer/multiplayer.dart';
 import 'package:uuid/uuid.dart';
 
 class Lobby extends StatelessWidget {

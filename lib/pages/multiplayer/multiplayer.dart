@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_chess_board/flutter_chess_board.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:chico_chess_connect/pages/multiplayer/multiplayer_settings.dart';
+import 'package:chico_chess_connect/utils/chess_board_screen.dart';
 
 class MultiplayerChessBoardScreen extends StatefulWidget {
   final String gameId;
@@ -99,72 +100,21 @@ class _MultiplayerChessBoardScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Multiplayer Chess'),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MultiplayerSettingsPage(),
-                  maintainState: true,
-                ),
-              ).then((_) {
-                _loadSettings();
-              });
-            },
+    return ChessBoardScreen(
+      controller: controller,
+      boardColor: _boardColor,
+      showGameState: showGameState,
+      onSettingsPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MultiplayerSettingsPage(),
           ),
-        ],
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Center(
-              child: ChessBoard(
-                controller: controller,
-                onMove: _isPlayerTurn
-                    ? () async {
-                        await _updatePGN();
-                      }
-                    : null,
-                boardColor: _boardColor == 'green'
-                    ? BoardColor.green
-                    : BoardColor.brown,
-                boardOrientation: _playerColor == 'white'
-                    ? PlayerColor.white
-                    : PlayerColor.black,
-                enableUserMoves: _isPlayerTurn,
-              ),
-            ),
-          ),
-          if (showGameState)
-            Expanded(
-              child: ValueListenableBuilder<Chess>(
-                valueListenable: controller,
-                builder: (context, game, _) {
-                  return Text(
-                    controller.getSan().fold(
-                          '',
-                          (previousValue, element) =>
-                              '$previousValue\n${element ?? ''}',
-                        ),
-                  );
-                },
-              ),
-            ),
-          ElevatedButton(
-            onPressed: () {
-              setState(() {
-                showGameState = !showGameState;
-              });
-            },
-            child: Text(showGameState ? 'Hide Moves' : 'Show Moves'),
-          ),
-        ],
-      ),
+        ).then((_) {
+          _loadSettings();
+        });
+      },
+      onMove: _isPlayerTurn ? _updatePGN : null,
     );
   }
 }
