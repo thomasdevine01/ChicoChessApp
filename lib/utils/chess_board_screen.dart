@@ -1,4 +1,3 @@
-// chess_board_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_chess_board/flutter_chess_board.dart';
 
@@ -22,6 +21,11 @@ class ChessBoardScreen extends StatefulWidget {
 }
 
 class _ChessBoardScreenState extends State<ChessBoardScreen> {
+  String player1Username = 'Player 1';
+  int player1Rating = 1200;
+  String player2Username = 'Player 2';
+  int player2Rating = 1200;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -36,6 +40,7 @@ class _ChessBoardScreenState extends State<ChessBoardScreen> {
       ),
       body: Column(
         children: [
+          _buildPlayerInfo(player2Username, player2Rating),
           Expanded(
             child: Center(
               child: ChessBoard(
@@ -47,6 +52,7 @@ class _ChessBoardScreenState extends State<ChessBoardScreen> {
               ),
             ),
           ),
+          _buildPlayerInfo(player1Username, player1Rating),
           if (widget.showGameState)
             Expanded(
               child: ValueListenableBuilder<Chess>(
@@ -62,6 +68,25 @@ class _ChessBoardScreenState extends State<ChessBoardScreen> {
                 },
               ),
             ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlayerInfo(String username, int rating) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            username,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          Text(
+            'Rating: $rating',
+            style: TextStyle(fontSize: 18),
+          ),
         ],
       ),
     );
