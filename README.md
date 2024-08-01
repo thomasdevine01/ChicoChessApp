@@ -23,5 +23,5 @@ Chico Chess Connect is an android app that allows players to connect with other 
 
 # Images 
 
-|![]([https://github.com/thomasdevine01/ChicoChessApp/blob/Images/Local%20Chess%20Home.png?raw=true](https://github.com/thomasdevine01/ChicoChessApp/blob/Images/2.png?raw=true))   |![]([https://github.com/thomasdevine01/ChicoChessApp/blob/Images/Local%20Chess%20Movelist.png?raw=true](https://github.com/thomasdevine01/ChicoChessApp/blob/Images/1.png?raw=true))   |![]([https://github.com/thomasdevine01/ChicoChessApp/blob/Images/Local%20Chess%20Settings.png?raw=true](https://github.com/thomasdevine01/ChicoChessApp/blob/Images/3.png?raw=true))   |
+|![](https://github.com/thomasdevine01/ChicoChessApp/blob/Images/3.png?raw=true)   |![](https://github.com/thomasdevine01/ChicoChessApp/blob/Images/2.png?raw=true)   |![](https://github.com/thomasdevine01/ChicoChessApp/blob/Images/1.png?raw=true)   |
 |---|---|---|
