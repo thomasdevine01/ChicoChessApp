@@ -52,7 +52,9 @@ class _SignInScreenState extends State<SignInScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sign In'),
+        title: const Text('Sign In', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.grey[850], // Grey background for the AppBar
+        iconTheme: const IconThemeData(color: Colors.white), // White icons
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -60,24 +62,60 @@ class _SignInScreenState extends State<SignInScreen> {
           children: [
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Email',
+                labelStyle: TextStyle(color: Colors.white), // White label text
+                filled: true,
+                fillColor: Colors.transparent, // Transparent background
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white), // White border
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white), // White focused border
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white), // White enabled border
+                ),
               ),
+              style: TextStyle(color: Colors.white), // White input text
+              cursorColor: Colors.white, // White cursor color
             ),
+            const SizedBox(height: 16),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 labelText: 'Password',
+                labelStyle: TextStyle(color: Colors.white), // White label text
+                filled: true,
+                fillColor: Colors.transparent, // Transparent background
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white), // White border
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white), // White focused border
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.white), // White enabled border
+                ),
               ),
+              style: TextStyle(color: Colors.white), // White input text
+              cursorColor: Colors.white, // White cursor color
               obscureText: true,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                _saveUserProfile();
-                _signIn();
-              },
-              child: const Text('Sign In'),
+            SizedBox(
+              width: double.infinity, // Make the button full width
+              child: ElevatedButton(
+                onPressed: () {
+                  _saveUserProfile();
+                  _signIn();
+                },
+                child: const Text('Sign In', style: TextStyle(color: Colors.white)), // White text
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.grey[850], // Grey background for the button
+                  padding: EdgeInsets.symmetric(vertical: 16), // Make the button taller
+                ),
+              ),
             ),
             if (_errorMessage != null)
               Text(

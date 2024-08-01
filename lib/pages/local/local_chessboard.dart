@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_chess_board/flutter_chess_board.dart';
 import 'package:chico_chess_connect/pages/local/local_chess_settings.dart';
+import 'dart:async'; // Import this for the Timer class
 
 class LocalChessBoardScreen extends StatefulWidget {
   const LocalChessBoardScreen({super.key});
@@ -17,11 +18,16 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
   String _currentMoveList = "";
   bool playerTurn = true; // true for White's turn, false for Black's turn
   final ScrollController _scrollController = ScrollController();
+  late Stopwatch whiteTimer;
+  late Stopwatch blackTimer;
+  late String whiteTimerString = "00:00";
+  late String blackTimerString = "00:00";
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
+    _initializeTimers();
   }
 
   _loadSettings() async {
@@ -42,9 +48,50 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
 
     setState(() {
       playerTurn = !playerTurn; // Toggle the player turn
+      _toggleTimers();
     });
 
-    // Auto-scroll to the bottom of the list
+    // Auto-scroll to the bottom
+    _scrollToBottom();
+  }
+
+  void _initializeTimers() {
+    whiteTimer = Stopwatch();
+    blackTimer = Stopwatch();
+    whiteTimer.start();
+    _startTimer();
+  }
+
+  void _startTimer() {
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        if (playerTurn) {
+          whiteTimerString = _formatDuration(whiteTimer.elapsed);
+        } else {
+          blackTimerString = _formatDuration(blackTimer.elapsed);
+        }
+      });
+    });
+  }
+
+  void _toggleTimers() {
+    if (playerTurn) {
+      blackTimer.stop();
+      whiteTimer.start();
+    } else {
+      whiteTimer.stop();
+      blackTimer.start();
+    }
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$twoDigitMinutes:$twoDigitSeconds";
+  }
+
+  void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent,
@@ -58,7 +105,9 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Chess Game'),
+        title: const Text('Chess Game', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.grey[850], // Grey background for the AppBar
+        iconTheme: IconThemeData(color: Colors.white), // White icons
         actions: <Widget>[
           IconButton(
             icon: const Icon(Icons.settings),
@@ -75,55 +124,79 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              _buildPlayerInfo('Player 2', 1200, isTop: true),
-            ],
-          ),
-          Expanded(
-            child: Row(
+      body: Container(
+        color: Colors.blueGrey, // Midnight Blue background
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
-                  child: Center(
-                    child: ChessBoard(
-                      controller: controller,
-                      onMove: _updatePGN,
-                      boardColor: _boardColor == 'green'
-                          ? BoardColor.green
-                          : BoardColor.brown,
-                    ),
+                _buildPlayerInfo('Player 2', 1200, isTop: true),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    blackTimerString,
+                    style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                 ),
               ],
             ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              _buildPlayerInfo('Player 1', 1200, isTop: false),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-              child: Text(
-                playerTurn ? 'White\'s Turn' : 'Black\'s Turn',
-                style: TextStyle(fontSize: 18),
+            Expanded(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Center(
+                      child: ChessBoard(
+                        controller: controller,
+                        onMove: _updatePGN,
+                        boardColor: _boardColor == 'green'
+                            ? BoardColor.green
+                            : BoardColor.brown,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildPlayerInfo('Player 1', 1200, isTop: false),
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    whiteTimerString,
+                    style: TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
               child: Center(
-                child: _buildMoveTable(),
+                child: Text(
+                  playerTurn ? "White's Turn" : "Black's Turn",
+                  style: TextStyle(color: Colors.white, fontSize: 18),
+                ),
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 4.0), // Adjust top padding to fit the thick line
+                  child: Column(
+                    children: [
+                      Center(
+                        child: _buildMoveTable(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -136,11 +209,11 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
         children: [
           Text(
             username,
-            style: TextStyle(fontSize: 18),
+            style: TextStyle(color: Colors.white, fontSize: 18),
           ),
           Text(
             'Rating: $rating',
-            style: TextStyle(fontSize: 14),
+            style: TextStyle(color: Colors.white, fontSize: 14),
           ),
         ],
       ),
@@ -148,43 +221,53 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
   }
 
   Widget _buildMoveTable() {
-    final moves = _currentMoveList.split(' ')
-      .where((move) => move.isNotEmpty && !RegExp(r'^\d+\.').hasMatch(move))
-      .toList();
+    final moves = _currentMoveList
+        .split(' ')
+        .where((move) => move.isNotEmpty && !RegExp(r'^\d+\.').hasMatch(move))
+        .toList();
     final rows = <TableRow>[];
 
-    for (int i = 0; i < moves.length; i += 2) {
-      final moveNumber = (i ~/ 2) + 1;
-      final whiteMove = moves[i];
-      final blackMove = i + 1 < moves.length ? moves[i + 1] : '';
+    // Add the initial row to ensure there is at least one row with three cells
+    if (moves.isEmpty) {
+      rows.add(TableRow(children: [
+        _buildMoveCell('1.'),
+        _buildMoveCell(''),
+        _buildMoveCell(''),
+      ]));
+    } else {
+      // Add actual moves
+      for (int i = 0; i < moves.length; i += 2) {
+        final whiteMove = moves[i];
+        final blackMove = i + 1 < moves.length ? moves[i + 1] : '';
 
-      rows.add(TableRow(
-        children: [
-          _buildMoveCell(moveNumber.toString()),
-          _buildMoveCell(whiteMove),
-          _buildMoveCell(blackMove),
-        ],
-      ));
+        rows.add(TableRow(
+          children: [
+            _buildMoveCell('${(i / 2 + 1).ceil()}.'),
+            _buildMoveCell(whiteMove),
+            _buildMoveCell(blackMove),
+          ],
+        ));
+      }
     }
 
     return Table(
-      border: TableBorder.all(color: Colors.black),
       columnWidths: {
-        0: FixedColumnWidth(50), // Wider column for move numbers
+        0: FixedColumnWidth(60), // Adjust the width for move numbers
         1: FlexColumnWidth(),
         2: FlexColumnWidth(),
       },
+      border: TableBorder.all(color: Colors.grey[850]!, width: 1), // Grey[850] border color
       children: rows,
     );
   }
 
-  Widget _buildMoveCell(String text) {
+  Widget _buildMoveCell(String move) {
     return Container(
       padding: const EdgeInsets.all(8.0),
-      alignment: Alignment.center,
       child: Text(
-        text,
-        style: TextStyle(fontSize: 16),
+        move,
+        style: TextStyle(color: Colors.white, fontSize: 16),
+        textAlign: TextAlign.center,
       ),
     );
   }
