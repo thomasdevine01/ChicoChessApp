@@ -1,16 +1,27 @@
-# chico_chess_connect
+# Chico Chess Connect
 
-A new Flutter project.
+Chico Chess Connect is an android app that allows players to connect with other players and play chess OTB (Over the Board) or Online.
 
-## Getting Started
+# Features
+* OTB (Over the Board) Chess
+* Multiplayer
+* Interactivity with other chess services (i.e lichess.com)
+* Export games via PGN
+* Game Clock
+* Multiple Board Colors
 
-This project is a starting point for a Flutter application.
+# Core Technologies
+* Account authentication via firebase
+* Firebase game sync
+* Multi Page Application
 
-A few resources to get you started if this is your first Flutter project:
+# How to use
+1. Download APK
+2. Install to Emulator / Physical Device
+3. Login
+5. Enjoy!
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+# Images 
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+|![](https://github.com/thomasdevine01/ChicoChessApp/blob/Images/Local%20Chess%20Home.png?raw=true)   |![](https://github.com/thomasdevine01/ChicoChessApp/blob/Images/Local%20Chess%20Movelist.png?raw=true)   |![](https://github.com/thomasdevine01/ChicoChessApp/blob/Images/Local%20Chess%20Settings.png?raw=true)   |
+|---|---|---|
