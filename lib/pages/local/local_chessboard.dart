@@ -3,6 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_chess_board/flutter_chess_board.dart';
 import 'package:chico_chess_connect/pages/local/local_chess_settings.dart';
 import 'dart:async'; // Import this for the Timer class
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class LocalChessBoardScreen extends StatefulWidget {
   const LocalChessBoardScreen({super.key});
@@ -22,12 +24,17 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
   late Stopwatch blackTimer;
   late String whiteTimerString = "00:00";
   late String blackTimerString = "00:00";
+  String player1Username = 'Player 1'; // Default username
+  String player2Username = 'Player 2'; // Default username
+  String whitePlayerRating = 'Unknown'; // Default rating
+  String blackPlayerRating = 'Unknown'; // Default rating
 
   @override
   void initState() {
     super.initState();
     _loadSettings();
     _initializeTimers();
+    _loadUsernames(); // Load usernames from SharedPreferences
   }
 
   _loadSettings() async {
@@ -35,6 +42,46 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
     setState(() {
       _boardColor = prefs.getString('boardColor') ?? 'green';
     });
+  }
+
+  _loadUsernames() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      player1Username = prefs.getString('player1Username') ?? 'Player 1';
+      player2Username = prefs.getString('player2Username') ?? 'Player 2';
+      _fetchPlayerData(player1Username, 'white');
+      _fetchPlayerData(player2Username, 'black');
+    });
+  }
+
+  Future<void> _fetchPlayerData(String username, String color) async {
+    if (username == 'Player 1' || username == 'Player 2') return; // Skip if default usernames
+
+    try {
+      final response = await http.get(Uri.parse('https://lichess.org/api/user/$username'));
+      if (response.statusCode == 200) {
+        final playerData = json.decode(response.body);
+        final rapidRating = playerData['perfs']?['rapid']?['rating'] ?? 'Unknown';
+
+        setState(() {
+          if (color == 'white') {
+            whitePlayerRating = rapidRating.toString();
+            player1Username = username;
+          } else if (color == 'black') {
+            blackPlayerRating = rapidRating.toString();
+            player2Username = username;
+          }
+        });
+      }
+    } catch (e) {
+      setState(() {
+        if (color == 'white') {
+          whitePlayerRating = 'Unknown';
+        } else if (color == 'black') {
+          blackPlayerRating = 'Unknown';
+        }
+      });
+    }
   }
 
   _updatePGN() async {
@@ -131,7 +178,7 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildPlayerInfo('Player 2', 1200, isTop: true),
+                _buildPlayerInfo(player2Username, blackPlayerRating, isTop: true),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
@@ -161,7 +208,7 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildPlayerInfo('Player 1', 1200, isTop: false),
+                _buildPlayerInfo(player1Username, whitePlayerRating, isTop: false),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
@@ -201,7 +248,7 @@ class _LocalChessBoardScreenState extends State<LocalChessBoardScreen> {
     );
   }
 
-  Widget _buildPlayerInfo(String username, int rating, {required bool isTop}) {
+  Widget _buildPlayerInfo(String username, String rating, {required bool isTop}) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
